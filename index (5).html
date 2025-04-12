@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registro de Horas de Maquinaria</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    h2 { text-align: center; }
+    label { margin-top: 10px; display: block; }
+    input, select, button { width: 100%; padding: 10px; font-size: 16px; margin-top: 5px; }
+    button { margin-top: 20px; }
+    .enviar { background-color: #28a745; color: white; border: none; }
+    .secundario { background-color: #ccc; color: black; border: none; }
+    #mensagem { margin-top: 15px; padding: 10px; display: none; }
+  </style>
+</head>
+<body>
+  <h2>Registro de Horas de Maquinaria</h2>
+  <form id="registroForm">
+    <label>Fecha:</label><input type="date" name="fecha" required />
+    <label>Turno:</label>
+    <select name="turno" required>
+      <option value="">Seleccione...</option><option value="1">1</option><option value="2">2</option>
+    </select>
+    <label>Hora de Entrada:</label><input type="time" name="hora_entrada" required />
+    <label>Hora de Salida:</label><input type="time" name="hora_salida" required />
+    <label>Código de Máquina:</label>
+    <select name="codigo_maquina" required>
+      <option value="">Seleccione...</option>
+      <option value="L36">L36</option><option value="524K">524K</option>
+      <option value="ZL50-02">ZL50-02</option><option value="ZL50-01">ZL50-01</option>
+      <option value="WA320">WA320</option><option value="PC210">PC210</option><option value="624K">624K</option>
+    </select>
+    <label>Operador:</label><input type="text" name="operador" required />
+    <label>Código de Sección:</label><input type="number" name="codigo_sector" id="codigo_sector" required />
+    <label>Sector:</label><input type="text" name="sector_nombre" id="sector_nombre" readonly />
+    <label>Código de Trabajo:</label><input type="number" name="codigo_trabajo" id="codigo_trabajo" required />
+    <label>Descripción del Trabajo:</label><input type="text" name="descripcion_trabajo" id="descripcion_trabajo" readonly />
+    <label>Tipo de Trabajo:</label><input type="text" name="tipo_trabajo" id="tipo_trabajo" readonly />
+    <label>Hora Inicial (hm):</label><input type="text" name="hora_inicial" id="hora_inicial" required />
+    <label>Hora Final (hm):</label><input type="text" name="hora_final" id="hora_final" required />
+    <label>Horas Trabajadas:</label><input type="text" name="horas_trabajadas" id="horas_trabajadas" readonly />
+    <label>Número de Boleta:</label><input type="text" name="boleta" required />
+    <label>Litros de Combustible:</label><input type="number" name="combustible" required />
+    <button type="submit" class="enviar">Enviar</button>
+    <button type="button" onclick="form.reset()" class="secundario">Limpiar</button>
+  </form>
+  <div id="mensagem"></div>
+
+  <script>
+    const form = document.getElementById('registroForm');
+    const mensagem = document.getElementById('mensagem');
+
+    const setores = {1: "CAIASA", 2: "EX UNIPORT", 3: "ANGOSTURA", 4: "PLAYAS DE CAMIONES", 5: "SILOS BOLSAS", 6: "CALDERA"};
+    const trabalhos = {
+      1: ["REPARACIÓN DE CAMINO - CARGAMENTO - PERFILADO", "MANTENIMIENTO/REPARACIÓN"],
+      2: ["EMBARQUE - ALIMENTACIÓN DE REGISTROS EN CELDA", "OPERACIÓN EMBARQUE"],
+      3: ["CARGA DE PELLETS PARA VENTA", "OPERACIÓN EMBARQUE"],
+      4: ["CARGA DE HARINA PARA VENTA", "OPERACIÓN EMBARQUE"],
+      5: ["REMOLQUE DE CAMIÓN AVERIADO", "AUXILIO"],
+      6: ["TRASILAJE - CARGA DE CAMIONES", "TRASILAJE"],
+      7: ["ENVIO DE POLVO Y CASCARILLA A CALDERA", "LIMPIEZA"],
+      8: ["APOYO EN LIMPIEZA - RECUPERACIÓN DE MERCADERIA", "LIMPIEZA"],
+      9: ["ENVIO DE CHAUCHA A CALDERA", "LIMPIEZA"],
+      10: ["PRUEBA DE PESAJE EN BALANZAS", "VARIOS"],
+      11: ["CALDERA - TRABAJOS VARIOS", "TRABAJOS VARIOS"]
+    };
+
+    form.hora_inicial.addEventListener('input', calcularHoras);
+    form.hora_final.addEventListener('input', calcularHoras);
+    form.codigo_sector.addEventListener('input', () => {
+      form.sector_nombre.value = setores[form.codigo_sector.value] || "";
+    });
+    form.codigo_trabajo.addEventListener('input', () => {
+      const t = trabalhos[form.codigo_trabajo.value];
+      form.descripcion_trabajo.value = t ? t[0] : "";
+      form.tipo_trabajo.value = t ? t[1] : "";
+    });
+
+    function calcularHoras() {
+      const inicio = parseFloat(form.hora_inicial.value.replace(',', '.'));
+      const fim = parseFloat(form.hora_final.value.replace(',', '.'));
+      if (!isNaN(inicio) && !isNaN(fim)) {
+        let total = fim - inicio;
+        if (total < 0) total = 0;
+        form.horas_trabajadas.value = total.toFixed(1).replace('.', ',');
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {};
+      formData.forEach((value, key) => data[key] = value);
+
+      try {
+        await fetch("https://script.google.com/macros/s/AKfycbzJFboYEaizPAmCOhdJX6hLZTxLjhPFwDFxYjYBuJoysEp5KmcDvTHHPML1POKa4IIj/exec", {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        mensagem.textContent = "✅ Registro enviado con éxito.";
+        mensagem.style.backgroundColor = "#d4edda";
+        form.reset();
+      } catch (err) {
+        mensagem.textContent = "❌ Error al enviar el registro.";
+        mensagem.style.backgroundColor = "#f8d7da";
+      }
+      mensagem.style.display = "block";
+    });
+  </script>
+</body>
+</html>
