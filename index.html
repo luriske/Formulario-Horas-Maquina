@@ -30,15 +30,16 @@
 <main>
   <strong>GR Servicios</strong>
   <h1>Partes diarios</h1>
+  <noscript><p>Abra este archivo en el navegador para cargar los partes diarios.</p></noscript>
+  <form id="parte">
   <label class="modo">Destino del informe
-    <select id="destino" name="destino" form="parte" required>
+    <select id="destino" name="destino" required>
       <option value="">Seleccione un destino…</option>
       <option>Caldera</option>
       <option>Logística y Recepción</option>
       <option>Embarque de Harina</option>
     </select>
   </label>
-  <form id="parte" hidden>
     <label class="modo">Modo de carga
       <select id="modo"><option value="rapido">Rápido</option><option value="completo" selected>Completo</option></select>
     </label>
@@ -179,14 +180,13 @@ const destino = document.querySelector('#destino');
 const todosDestinos = document.querySelector('#todos-destinos');
 
 function actualizarDestino() {
-  form.hidden = !destino.value;
   try { localStorage.setItem('gr-partes-destino', destino.value); } catch {}
   renderizar();
 }
 
 try { destino.value = localStorage.getItem('gr-partes-destino') || ''; } catch {}
-form.hidden = !destino.value;
 destino.addEventListener('change', actualizarDestino);
+destino.addEventListener('input', actualizarDestino);
 todosDestinos.addEventListener('change', renderizar);
 
 function opciones(nombre, entradas) {
