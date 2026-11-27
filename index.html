@@ -26,7 +26,28 @@
       <label>Fecha <input type="date" name="fecha" required></label>
       <label>Nº de boleta <input name="boleta" inputmode="numeric" pattern="[0-9]+" maxlength="24" required></label>
       <label>Máquina <select name="codigo_maquina" required></select></label>
-      <label>Operador <input name="operador" maxlength="100" required></label>
+      <label>Operador <input name="operador" list="operadores" maxlength="100" required></label>
+      <datalist id="operadores">
+        <option value="ARIEL CENTURION"></option>
+        <option value="CARLOS GIMENEZ"></option>
+        <option value="DAVID CABRERA"></option>
+        <option value="EDGAR ESPINOLA"></option>
+        <option value="EMILIANO FRANCO"></option>
+        <option value="FELIPE GONZALEZ"></option>
+        <option value="FLORENTIN RAMOS"></option>
+        <option value="GABRIEL VILLALBA"></option>
+        <option value="GILBERTO QUQUEJO"></option>
+        <option value="IDALINO"></option>
+        <option value="JOSE CAÑETE"></option>
+        <option value="JOSE PRIETO"></option>
+        <option value="MARIO CACERES"></option>
+        <option value="MILCIADES FRANCO"></option>
+        <option value="NELSON GIMENEZ"></option>
+        <option value="RAFAEL JUSTINO ESPINOZA"></option>
+        <option value="RAMON MENDOZA"></option>
+        <option value="RICHARD OJEDA"></option>
+        <option value="WILSON CENTURION"></option>
+      </datalist>
       <label>Sector <select name="codigo_sector" required></select></label>
       <label>Trabajo <select name="codigo_trabajo" required></select></label>
       <label>Horómetro inicial <input name="hora_inicial" inputmode="decimal" required></label>
