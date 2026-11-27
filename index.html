@@ -30,7 +30,15 @@
 <main>
   <strong>GR Servicios</strong>
   <h1>Partes diarios</h1>
-  <form id="parte">
+  <label class="modo">Destino del informe
+    <select id="destino" name="destino" form="parte" required>
+      <option value="">Seleccione un destino…</option>
+      <option>Caldera</option>
+      <option>Logística y Recepción</option>
+      <option>Embarque de Harina</option>
+    </select>
+  </label>
+  <form id="parte" hidden>
     <label class="modo">Modo de carga
       <select id="modo"><option value="rapido">Rápido</option><option value="completo" selected>Completo</option></select>
     </label>
@@ -83,6 +91,7 @@
   </form>
   <p id="estado" role="status"></p>
   <h2>Registros de este dispositivo</h2>
+  <label><span><input type="checkbox" id="todos-destinos" style="width:auto;min-height:auto"> Mostrar todos los destinos</span></label>
   <details><summary>Configuración de envío</summary>
     <label>Clave de sincronización <input id="clave" type="password" autocomplete="off"></label>
   </details>
@@ -166,6 +175,20 @@ document.querySelector('#cambiar-datos').addEventListener('click', () => {
 
 datosParte.addEventListener('invalid', () => mostrarDatos(true), true);
 
+const destino = document.querySelector('#destino');
+const todosDestinos = document.querySelector('#todos-destinos');
+
+function actualizarDestino() {
+  form.hidden = !destino.value;
+  try { localStorage.setItem('gr-partes-destino', destino.value); } catch {}
+  renderizar();
+}
+
+try { destino.value = localStorage.getItem('gr-partes-destino') || ''; } catch {}
+form.hidden = !destino.value;
+destino.addEventListener('change', actualizarDestino);
+todosDestinos.addEventListener('change', renderizar);
+
 function opciones(nombre, entradas) {
   const campo = campos[nombre];
   campo.add(new Option('Seleccione…', ''));
@@ -203,10 +226,11 @@ function persistir(nuevos) {
 function renderizar() {
   lista.replaceChildren();
   for (const item of [...registros].reverse()) {
+    if (!todosDestinos.checked && item.destino && item.destino !== destino.value) continue;
     const fila = document.createElement('article');
     const texto = document.createElement('span');
     texto.textContent = [item.fecha, item.boleta, item.codigo_maquina,
-      item.sector_nombre, item.horas_trabajadas + ' h', item.estado].join(' · ');
+      item.destino || 'Sin destino', item.sector_nombre, item.horas_trabajadas + ' h', item.estado].join(' · ');
     const editar = document.createElement('button');
     editar.type = 'button';
     editar.className = 'secondary';
@@ -218,9 +242,10 @@ function renderizar() {
       }
       guardar.textContent = 'Guardar cambios';
       cancelar.hidden = false;
+      actualizarDestino();
       mostrarDatos(true);
       mostrarHoras();
-      campos.boleta.focus();
+      (destino.value ? campos.boleta : destino).focus();
     };
     fila.append(texto, editar);
     lista.append(fila);
