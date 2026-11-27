@@ -20,19 +20,36 @@
   [hidden] { display: none !important }
   .modo, .numeros, #datos-parte { margin-bottom: 16px }
   #resumen-parte { background: #eef2f5; padding: 12px; border-radius: 6px }
+  form { display: grid; gap: 14px }
+  form > * { margin: 0 }
+  .modo { margin-bottom: 0 }
+  .preferencias, .datos-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) }
+  .ancho { grid-column: 1 / -1 }
+  #datos-parte { margin-bottom: 0 }
+  #datos-parte details { margin-top: 8px }
+  .numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 0 }
+  .numeros label:first-child { grid-column: 1 / -1 }
+  label { font-size: .875rem }
+  input, select { min-width: 0; font-size: 16px }
+  #guardar { width: 100%; font-weight: 700 }
+  #horas { background: #eef2f5; border-radius: 6px; padding: 8px 10px; font-size: .9rem }
+  #aviso-navegador { margin: 0 0 12px; color: #734817; font-size: .875rem }
   @media (max-width: 600px) {
-    .modo { grid-template-columns: 1fr 1fr; align-items: center }
-    .numeros { grid-template-columns: repeat(2, minmax(0, 1fr)) }
-    .numeros label:first-child { grid-column: 1 / -1 }
-    #guardar { width: 100% }
+    main { padding: 12px 10px 24px }
+    h1 { margin: 2px 0 10px; font-size: 1.4rem }
+    form { padding: 12px; gap: 10px }
+    .grid { gap: 8px }
+    label { gap: 3px }
+    input, select { padding: 6px }
   }
 </style>
 <main>
   <strong>GR Servicios</strong>
   <h1>Partes diarios</h1>
-  <noscript><p>Abra este archivo en el navegador para cargar los partes diarios.</p></noscript>
+  <p id="aviso-navegador">Para guardar partes, abra esta página en Safari o Chrome si está en un visor de archivos.</p>
   <form id="parte">
-  <label class="modo">Destino del informe
+    <div class="grid preferencias">
+  <label class="modo ancho">Destino del informe
     <select id="destino" name="destino" required>
       <option value="">Seleccione un destino…</option>
       <option>Caldera</option>
@@ -43,12 +60,27 @@
     <label class="modo">Modo de carga
       <select id="modo"><option value="rapido">Rápido</option><option value="completo" selected>Completo</option></select>
     </label>
+    </div>
     <p id="resumen-parte" hidden><span></span> <button type="button" class="secondary" id="cambiar-datos">Cambiar</button></p>
     <div id="datos-parte">
-    <div class="grid">
+    <div class="grid datos-grid">
       <label>Fecha <input type="date" name="fecha" required></label>
-      <label>Máquina <select name="codigo_maquina" required></select></label>
-      <label>Operador <input name="operador" list="operadores" maxlength="100" required></label>
+      <label>Máquina <select name="codigo_maquina" required>
+          <option value="">Seleccione…</option>
+          <option value="WA320-1">WA320-1</option>
+          <option value="WA320-2">WA320-2</option>
+          <option value="624K-1">624K-1</option>
+          <option value="624K-2">624K-2</option>
+          <option value="524K-1">524K-1</option>
+          <option value="524K-2">524K-2</option>
+          <option value="ZL50">ZL50</option>
+          <option value="L36">L36</option>
+          <option value="ZL30-1">ZL30-1</option>
+          <option value="ZL30-2">ZL30-2</option>
+          <option value="HL635">HL635</option>
+          <option value="PC210">PC210</option>
+        </select></label>
+      <label class="ancho">Operador <input name="operador" list="operadores" maxlength="100" required></label>
       <datalist id="operadores">
         <option value="ARIEL CENTURION"></option>
         <option value="CARLOS GIMENEZ"></option>
@@ -70,8 +102,30 @@
         <option value="RICHARD OJEDA"></option>
         <option value="WILSON CENTURION"></option>
       </datalist>
-      <label>Sector <select name="codigo_sector" required></select></label>
-      <label>Trabajo <select name="codigo_trabajo" required></select></label>
+      <label class="ancho">Sector <select name="codigo_sector" required>
+          <option value="">Seleccione…</option>
+          <option value="1">CAIASA</option>
+          <option value="2">EX UNIPORT</option>
+          <option value="3">ANGOSTURA</option>
+          <option value="4">PLAYAS DE CAMIONES</option>
+          <option value="5">SILOS BOLSAS</option>
+          <option value="6">CALDERA</option>
+        </select></label>
+      <label class="ancho">Trabajo <select name="codigo_trabajo" required>
+          <option value="">Seleccione…</option>
+          <option value="1">1 · REPARACIÓN DE CAMINO - CARGAMENTO - PERFILADO</option>
+          <option value="2">2 · EMBARQUE - ALIMENTACIÓN DE REGISTROS EN CELDA</option>
+          <option value="3">3 · CARGA DE PELLETS PARA VENTA</option>
+          <option value="4">4 · CARGA DE HARINA PARA VENTA</option>
+          <option value="5">5 · REMOLQUE DE CAMIÓN AVERIADO</option>
+          <option value="6">6 · TRASILAJE - CARGA DE CAMIONES</option>
+          <option value="7">7 · ENVIO DE POLVO Y CASCARILLA A CALDERA</option>
+          <option value="8">8 · APOYO EN LIMPIEZA - RECUPERACIÓN DE MERCADERIA</option>
+          <option value="9">9 · ENVIO DE CHAUCHA A CALDERA</option>
+          <option value="10">10 · PRUEBA DE PESAJE EN BALANZAS</option>
+          <option value="11">11 · CALDERA - TRABAJOS VARIOS</option>
+          <option value="12">12 · VACIADO DE CELDA</option>
+        </select></label>
     </div>
     <details>
       <summary>Horario opcional</summary>
@@ -87,7 +141,7 @@
       <label>Horómetro final <input name="hora_final" inputmode="decimal" required></label>
     </div>
     <output id="horas">Horas máquina: —</output>
-    <button id="guardar">Guardar y cargar otra</button>
+    <button id="guardar" disabled>Guardar y cargar otra</button>
     <button class="secondary" type="button" id="cancelar" hidden>Cancelar edición</button>
   </form>
   <p id="estado" role="status"></p>
@@ -101,7 +155,7 @@
 </main>
 <script>
 'use strict';
-    const setores = {1: "CAIASA", 2: "EX UNIPORT", 3: "ANGOSTURA", 4: "PLAYAS DE CAMIONES", 5: "SILOS BOLSAS", 6: "CALDERA"};
+const setores = {1: "CAIASA", 2: "EX UNIPORT", 3: "ANGOSTURA", 4: "PLAYAS DE CAMIONES", 5: "SILOS BOLSAS", 6: "CALDERA"};
     const trabalhos = {
       1: ["REPARACIÓN DE CAMINO - CARGAMENTO - PERFILADO", "MANTENIMIENTO/REPARACIÓN"],
       2: ["EMBARQUE - ALIMENTACIÓN DE REGISTROS EN CELDA", "OPERACIÓN EMBARQUE"],
@@ -118,8 +172,6 @@
     };
 
 
-const maquinas = ['WA320-1', 'WA320-2', '624K-1', '624K-2', '524K-1', '524K-2',
-  'ZL50', 'L36', 'ZL30-1', 'ZL30-2', 'HL635', 'PC210'];
 const form = document.querySelector('#parte');
 const campos = form.elements;
 const estado = document.querySelector('#estado');
@@ -189,14 +241,6 @@ destino.addEventListener('change', actualizarDestino);
 destino.addEventListener('input', actualizarDestino);
 todosDestinos.addEventListener('change', renderizar);
 
-function opciones(nombre, entradas) {
-  const campo = campos[nombre];
-  campo.add(new Option('Seleccione…', ''));
-  for (const [codigo, texto] of entradas) campo.add(new Option(texto, codigo));
-}
-opciones('codigo_maquina', maquinas.map(maquina => [maquina, maquina]));
-opciones('codigo_sector', Object.entries(setores).map(([codigo, sector]) => [codigo, codigo + ' · ' + sector]));
-opciones('codigo_trabajo', Object.entries(trabalhos).map(([codigo, trabajo]) => [codigo, codigo + ' · ' + trabajo[0]]));
 campos.fecha.value = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Asuncion' }).format(new Date());
 
 function lectura(valor) {
@@ -346,6 +390,8 @@ try {
   registros = JSON.parse(localStorage.getItem(almacenamiento) || '[]');
   if (!Array.isArray(registros)) throw new Error();
   renderizar();
+  guardar.disabled = false;
+  document.querySelector("#aviso-navegador").hidden = true;
   sincronizar();
 } catch {
   guardar.disabled = true;
