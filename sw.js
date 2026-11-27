@@ -1,4 +1,4 @@
-const cacheName = 'gr-partes-v1';
+const cacheName = 'gr-partes-v2';
 const pagina = new URL('./', self.location.href).href;
 self.addEventListener('install', event => event.waitUntil(
   caches.open(cacheName).then(cache => cache.add(pagina))
