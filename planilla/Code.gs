@@ -1,6 +1,6 @@
 const columnas = ['FECHA', 'HORA ENTRADA', 'HORA SALIDA', 'CODIGO MAQUINA', 'OPERADOR',
   'CODIGO SECTOR', 'SECTOR', 'TRABAJOS REALIZADOS', 'TIPO DE TRABAJO', 'CODIGO TRABAJO',
-  'HORA INICIAL', 'HORA FINAL', 'HORAS MAQUINA', 'BOLETA Nº', 'ID', 'REVISION'];
+  'HORA INICIAL', 'HORA FINAL', 'HORAS MAQUINA', 'BOLETA Nº', 'ID', 'REVISION', 'DESTINO'];
 
 function doPost(e) {
   const responder = datos => ContentService.createTextOutput(JSON.stringify(datos))
@@ -25,6 +25,10 @@ function doPost(e) {
         hoja.appendRow(columnas);
         hoja.setFrozenRows(1);
       }
+      const encabezado = hoja.getRange(1, 1, 1, columnas.length).getValues()[0];
+      if (!encabezado.at(-1) && encabezado.slice(0, -1).join('|') === columnas.slice(0, -1).join('|')) {
+        hoja.getRange(1, columnas.length).setValue('DESTINO');
+      }
       if (hoja.getRange(1, 1, 1, columnas.length).getValues()[0].join('|') !== columnas.join('|')) {
         return responder({ error: 'Encabezados incompatibles' });
       }
@@ -32,6 +36,8 @@ function doPost(e) {
       const claves = cantidad ? hoja.getRange(2, 14, cantidad, 3).getDisplayValues() : [];
       const indice = claves.findIndex(fila => fila[1] === parte.id);
       if (indice >= 0 && Number(claves[indice][2]) >= parte.revision) return responder({ id: parte.id });
+      const destinos = ["Caldera","Logística y Recepción","Embarque de Harina"];
+      if (parte.destino && !destinos.includes(parte.destino)) return responder({ error: 'Destino inválido' });
       const numero = String(parte.boleta).replace(/^0+(?=\d)/, '');
       if (claves.some((fila, posicion) => posicion !== indice &&
           fila[0].replace(/^0+(?=\d)/, '') === numero)) {
@@ -46,7 +52,7 @@ function doPost(e) {
         texto(parte.sector_nombre), texto(parte.descripcion_trabajo), texto(parte.tipo_trabajo),
         texto(parte.codigo_trabajo), parte.hora_inicial, parte.hora_final,
         Math.round((parte.hora_final - parte.hora_inicial) * 10) / 10,
-        texto(parte.boleta), parte.id, parte.revision
+        texto(parte.boleta), parte.id, parte.revision, texto(parte.destino)
       ]]);
       SpreadsheetApp.flush();
       return responder({ id: parte.id });
