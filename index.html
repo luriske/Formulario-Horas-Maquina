@@ -17,14 +17,27 @@
   button.secondary { background: white; color: #163d59 }
   article { margin: 8px 0; display: flex; align-items: center; justify-content: space-between; gap: 10px }
   output { display: block; margin: 16px 0 }
+  [hidden] { display: none !important }
+  .modo, .numeros, #datos-parte { margin-bottom: 16px }
+  #resumen-parte { background: #eef2f5; padding: 12px; border-radius: 6px }
+  @media (max-width: 600px) {
+    .modo { grid-template-columns: 1fr 1fr; align-items: center }
+    .numeros { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+    .numeros label:first-child { grid-column: 1 / -1 }
+    #guardar { width: 100% }
+  }
 </style>
 <main>
   <strong>GR Servicios</strong>
   <h1>Partes diarios</h1>
   <form id="parte">
+    <label class="modo">Modo de carga
+      <select id="modo"><option value="rapido">Rápido</option><option value="completo" selected>Completo</option></select>
+    </label>
+    <p id="resumen-parte" hidden><span></span> <button type="button" class="secondary" id="cambiar-datos">Cambiar</button></p>
+    <div id="datos-parte">
     <div class="grid">
       <label>Fecha <input type="date" name="fecha" required></label>
-      <label>Nº de boleta <input name="boleta" inputmode="numeric" pattern="[0-9]+" maxlength="24" required></label>
       <label>Máquina <select name="codigo_maquina" required></select></label>
       <label>Operador <input name="operador" list="operadores" maxlength="100" required></label>
       <datalist id="operadores">
@@ -50,8 +63,6 @@
       </datalist>
       <label>Sector <select name="codigo_sector" required></select></label>
       <label>Trabajo <select name="codigo_trabajo" required></select></label>
-      <label>Horómetro inicial <input name="hora_inicial" inputmode="decimal" required></label>
-      <label>Horómetro final <input name="hora_final" inputmode="decimal" required></label>
     </div>
     <details>
       <summary>Horario opcional</summary>
@@ -60,6 +71,12 @@
         <label>Salida <input type="time" name="hora_salida"></label>
       </div>
     </details>
+    </div>
+    <div class="grid numeros">
+      <label>Nº de boleta <input name="boleta" inputmode="numeric" pattern="[0-9]+" maxlength="24" required></label>
+      <label>Horómetro inicial <input name="hora_inicial" inputmode="decimal" required></label>
+      <label>Horómetro final <input name="hora_final" inputmode="decimal" required></label>
+    </div>
     <output id="horas">Horas máquina: —</output>
     <button id="guardar">Guardar y cargar otra</button>
     <button class="secondary" type="button" id="cancelar" hidden>Cancelar edición</button>
@@ -110,6 +127,44 @@ clave.addEventListener('change', () => {
 let registros = [];
 let editando = null;
 let enviando = false;
+
+const modo = document.querySelector('#modo');
+const datosParte = document.querySelector('#datos-parte');
+const resumenParte = document.querySelector('#resumen-parte');
+const resumenTexto = resumenParte.querySelector('span');
+const camposComunes = ['fecha', 'codigo_maquina', 'operador', 'codigo_sector', 'codigo_trabajo'];
+
+try {
+  if (localStorage.getItem('gr-partes-modo') === 'rapido') modo.value = 'rapido';
+} catch {}
+
+function mostrarDatos(visibles) {
+  datosParte.hidden = !visibles;
+  resumenParte.hidden = visibles;
+  if (!visibles) {
+    resumenTexto.textContent = [
+      campos.fecha.value, campos.codigo_maquina.value, campos.operador.value,
+      setores[campos.codigo_sector.value], trabalhos[campos.codigo_trabajo.value]?.[0]
+    ].join(' · ');
+  }
+}
+
+function aplicarModo() {
+  const completos = camposComunes.every(nombre => campos[nombre].value.trim());
+  mostrarDatos(modo.value === 'completo' || !completos || Boolean(editando));
+}
+
+modo.addEventListener('change', () => {
+  try { localStorage.setItem('gr-partes-modo', modo.value); } catch {}
+  aplicarModo();
+});
+
+document.querySelector('#cambiar-datos').addEventListener('click', () => {
+  mostrarDatos(true);
+  campos.codigo_maquina.focus();
+});
+
+datosParte.addEventListener('invalid', () => mostrarDatos(true), true);
 
 function opciones(nombre, entradas) {
   const campo = campos[nombre];
@@ -163,6 +218,7 @@ function renderizar() {
       }
       guardar.textContent = 'Guardar cambios';
       cancelar.hidden = false;
+      mostrarDatos(true);
       mostrarHoras();
       campos.boleta.focus();
     };
@@ -178,6 +234,7 @@ function nuevoParte() {
   for (const nombre of ['boleta', 'hora_inicial', 'hora_final', 'hora_entrada', 'hora_salida']) {
     campos[nombre].value = '';
   }
+  aplicarModo();
   mostrarHoras();
   campos.boleta.focus();
 }
